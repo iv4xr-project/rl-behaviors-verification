@@ -10,17 +10,30 @@ class RLAgent():
 		self.PastAction = -1
 		self.PastState = -1
 		self.Model = {}
+		self._posX = 0
+		self._posY = 0
 
 		self.Actions = {}
 		for i in range(len(actions)):
 			self.Actions[i] = actions[i]
 
-		self.QTable = []
-		for st in range(numStates):
-			line = []
-			for a in range(len(actions)):
-				line.append(0)
-			self.QTable.append(line)
+		self.QTable = {}
+
+
+	def SetInitialPosition(self, x, y):
+		self._posX = x
+		self._posY = y
+
+
+	def GetState(self, gridworld):
+		state = ""
+		if self._posX < 10:
+			state += "0"
+		state += str(self._posX)
+		if self._posY < 10:
+			state += "0"
+		state += str(self._posY)
+		return state
 
 
 	def UpdateModel(self, prevState, action, newState, reward):
@@ -35,6 +48,10 @@ class RLAgent():
 		if random() < self.Epsilon:
 			return randrange(len(self.Actions.keys()))
 		else:
+			if not state in self.QTable:
+				self.QTable[state] = []
+				for a in self.Actions.keys():
+					self.QTable[state].append(0)
 			qValues = self.QTable[state]
 			top = float("-inf")
 			ties = []
@@ -46,7 +63,7 @@ class RLAgent():
 				elif qValues[i] == top:
 					ties.append(i)
 
-    		return choice(ties)
+			return choice(ties)
 
 #def runDynaQ(self, gridWorld, agent):
 
@@ -57,7 +74,10 @@ if __name__ == "__main__":
 	gridWorld.Reset()
 
 	agent = RLAgent(4, ["UP", "DOWN", "LEFT", "RIGHT", "PRESS", "NOTHING"], 0.95, 0.1, 0.1, 10)
-	action = agent.ChooseActionEgreedy(0)
-	print agent.Actions[action]
+	agent.SetInitialPosition(gridWorld.Agents["agent0"].InitialPosX, gridWorld.Agents["agent0"].InitialPosY)
+
+	state = agent.GetState(gridWorld)
+	action = agent.ChooseActionEgreedy(state)
+	gridWorld.Print()
 
 

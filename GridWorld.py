@@ -57,6 +57,39 @@ class GridWorld:
 		for goalButton in self.GoalButtons.values():
 			goalButton.Reset()
 
+	def Print(self):
+		grid = self.Grid.copy()
+		for agentName in self.Agents:
+			a = self.Agents[agentName]
+			x = a.PosX
+			y = a.PosY
+			grid[x][y] = "a" + agentName[-1]
+		for buttonName in self.DoorButtons:
+			b = self.DoorButtons[buttonName]
+			x = b.PosX
+			y = b.PosY
+			grid[x][y] = "b" + buttonName[-1]
+		for buttonName in self.GoalButtons:
+			b = self.GoalButtons[buttonName]
+			x = b.PosX
+			y = b.PosY
+			grid[x][y] = "b" + buttonName[-1]
+		for doorName in self.Doors:
+			d = self.Doors[doorName]
+			x = d.PosX
+			y = d.PosY
+			grid[x][y] = "d" + doorName[-1]
+		for row in grid:
+			printableRow = ""
+			for i in range(len(row)):
+				if row[i] == "f":
+					printableRow += "  "
+				elif row[i] == "w":
+					printableRow += ".."
+				else:
+					printableRow += row[i]
+			print(printableRow)
+
 
 
 def CreateGridWorld(filename):
@@ -88,7 +121,7 @@ def CreateGridWorld(filename):
 				elif cell.startswith("f"):
 					row.append("f")
 				else:
-					print "Unknown cell: " + str(rowNum) + " " + str(colNum)
+					print("Unknown cell: " + str(rowNum) + " " + str(colNum))
 
 				if "cb" in cell:
 					buttonName = cell[cell.index("button"):]
@@ -121,6 +154,6 @@ def CreateGridWorld(filename):
 				button = GoalButton(buttonName)
 				goalButtons[buttonName] = button
 			else:
-				print "Unknow init line: " + line
+				print("Unknow init line: " + line)
 	
 	return GridWorld(grid, agents, doors, doorButtons, goalButtons)
