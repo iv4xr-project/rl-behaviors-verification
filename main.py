@@ -48,24 +48,34 @@ class RLAgent(WorldObject):
 
 
 	def Act(self, state):
-		rewards = self.Model[state]
+		actionStateRewards = self.Model[state]
 		top = float("-inf")
 		bestActions = []
 
-		for a in rewards.keys():
-			if rewards[a] > top:
-				top = rewards[a]
-				bestActions = []
-			elif rewards[a] == top:
-				bestActions.append(i)
+		for a in actionStateRewards.keys():
+			if actionStateRewards[a][1] > top:
+				top = actionStateRewards[a][1]
+				bestActions = [a]
+			elif actionStateRewards[a][1] == top:
+				bestActions.append(a)
 
 		return choice(bestActions)
 
 
-	def UpdateModel(self, prevState, action, reward):
+	def Eval(self, env):
+		env.Reset()
+		for i in range(50):
+			state = self.GetState(env)
+			action = self.Act(state)
+			env.Step(self.Name, action)
+			env.Render()
+
+
+
+	def UpdateModel(self, prevState, action, nextState, reward):
 		if not prevState in self.Model:
 			self.Model[prevState] = {}
-		self.Model[prevState][action] = reward #will I do this regadless of having done already?
+		self.Model[prevState][action] = (nextState, reward) #will I do this regadless of having done already?
 
 
 	def UpdateQTable(self, prevState, action, nextState, reward):
@@ -95,10 +105,6 @@ class RLAgent(WorldObject):
 				ties = [i]
 			elif qValues[i] == top:
 				ties.append(i)
-
-		if ties == []:
-			print(state)
-			print(qValues)
 		return choice(ties)
 
 
@@ -111,21 +117,30 @@ class RLAgent(WorldObject):
 
 	#using dynaQ
 	def Learn(self, env):
-		env.Reset()
-		#env.Render()
-		done = False
-		i = 0
-		while i < 1000 and not done:
-			i += 1
-			prevState = self.GetState(env)
-			action = self.ChooseActionEgreedy(prevState)
-			#print("ACTION: " + self.Actions[action])
-			reward, done = env.Step(self.Name, action)
-			nextState = self.GetState(env)
-			self.UpdateQTable(prevState, action, nextState, reward)
-			self.UpdateModel(prevState, action, reward)
-			#TODO add planning part of dynaQ
-			#env.Render()
+		for i in range(300):
+			step = 0
+			done = False
+			env.Reset()
+
+			while step < 1000 and not done:
+				step += 1
+				prevState = self.GetState(env)
+				action = self.ChooseActionEgreedy(prevState)
+				#if self.PosX == 5 and self.PosY == 4:
+				#	print("ACTION: " + self.Actions[action])
+				reward, done = env.Step(self.Name, action)
+				nextState = self.GetState(env)
+				self.UpdateQTable(prevState, action, nextState, reward)
+				self.UpdateModel(prevState, action, nextState, reward)
+
+				for j in range(self.PlanningStep):
+					randomState = choice(list(self.Model.keys()))
+					randomAction = choice(list(self.Model[randomState].keys()))
+					predictedState, predictedReward = self.Model[randomState][randomAction]
+					self.UpdateQTable(randomState, randomAction, predictedState, predictedReward)
+				#env.Render()
+			print(step)
+		env.Render()
 
 
 
@@ -136,6 +151,8 @@ if __name__ == "__main__":
 	#agent.SetInitialPosition(gridWorld.Agents["agent0"].InitialPosX, gridWorld.Agents["agent0"].InitialPosY)
 
 	agent.Learn(env)
+	print(agent.Model["11071110"])
+	#agent.Eval(env)
 
 
 

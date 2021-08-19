@@ -98,7 +98,6 @@ class GridWorld:
 		for b in self.GoalButtons.values():
 			if not b.WasPressed:
 				return False
-		print(">>>> GOAL REACHED <<<<")
 		return True
 
 
@@ -109,9 +108,9 @@ class GridWorld:
 		reward = -1
 		done = self.CheckGoal()
 
-		if action == 5: #NOTHING
-			reward = 0
-		elif action == 4: #PRESS
+		#if action == 5: #NOTHING
+			#reward = 0
+		if action == 4: #PRESS
 			b = self.GetUnpressedDoorButton(newX, newY)
 			if b != None:
 				b.Press()
@@ -119,6 +118,7 @@ class GridWorld:
 				b = self.GetUnpressedGoalButton(newX, newY)
 				if b != None:
 					b.Press()
+					print("pressed goal button")
 		else: #moving actions
 			if action == 0: #UP
 				newX -= 1
