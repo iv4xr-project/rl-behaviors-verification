@@ -34,14 +34,12 @@ class RLAgent(WorldObject):
 		if self.PosY < 10:
 			state += "0"
 		state += str(self.PosY)
-		for buttonName in env.DoorButtons.keys():
-			b = env.DoorButtons[buttonName]
+		for b in env.DoorButtons.values():
 			if b.WasPressed:
 				state += "1"
 			else:
 				state += "0"
-		for buttonName in env.GoalButtons.keys():
-			b = env.GoalButtons[buttonName]
+		for b in env.GoalButtons.values():
 			if b.WasPressed:
 				state += "1"
 			else:
@@ -67,13 +65,13 @@ class RLAgent(WorldObject):
 	def UpdateModel(self, prevState, action, reward):
 		if not prevState in self.Model:
 			self.Model[prevState] = {}
-		self.Model[prevState][action] = reward #assuming a deterministic env
+		self.Model[prevState][action] = reward #will I do this regadless of having done already?
 
 
 	def UpdateQTable(self, prevState, action, nextState, reward):
 		if not prevState in self.QTable:
 			self.QTable[prevState] = []
-			for a in self.Actions.keys():
+			for a in self.Actions:
 				self.QTable[prevState].append(0)
 
 
@@ -94,9 +92,13 @@ class RLAgent(WorldObject):
 		for i in range(len(qValues)):
 			if qValues[i] > top:
 				top = qValues[i]
-				ties = []
+				ties = [i]
 			elif qValues[i] == top:
 				ties.append(i)
+
+		if ties == []:
+			print(state)
+			print(qValues)
 		return choice(ties)
 
 
@@ -110,20 +112,20 @@ class RLAgent(WorldObject):
 	#using dynaQ
 	def Learn(self, env):
 		env.Reset()
-		env.Render()
+		#env.Render()
 		done = False
 		i = 0
-		while i < 1 and not done:
+		while i < 1000 and not done:
 			i += 1
 			prevState = self.GetState(env)
 			action = self.ChooseActionEgreedy(prevState)
-			print("ACTION: " + self.Actions[action])
+			#print("ACTION: " + self.Actions[action])
 			reward, done = env.Step(self.Name, action)
 			nextState = self.GetState(env)
 			self.UpdateQTable(prevState, action, nextState, reward)
-			self.UpdateModel(prevState, action, reward) #will I do this regadless of having done already?
-			#TODO planning part of dynaQ
-			env.Render()
+			self.UpdateModel(prevState, action, reward)
+			#TODO add planning part of dynaQ
+			#env.Render()
 
 
 
