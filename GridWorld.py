@@ -6,6 +6,7 @@ class WorldObject():
 		self.PosX = x
 		self.PosY = y
 
+
 class Door(WorldObject):
 	def __init__(self, name):
 		WorldObject.__init__(self, name)
@@ -13,6 +14,7 @@ class Door(WorldObject):
 
 	def Reset(self):
 		self.IsOpen = False
+
 
 class GoalButton(WorldObject):
 	def __init__(self, name):
@@ -22,6 +24,7 @@ class GoalButton(WorldObject):
 	def Reset(self):
 		self.WasPressed = False
 
+
 class DoorButton(GoalButton):
 	def __init__(self, name, door):
 		WorldObject.__init__(self, name)
@@ -29,6 +32,7 @@ class DoorButton(GoalButton):
 
 	def Reset(self):
 		self.WasPressed = False #TODO: use super()
+
 
 class Agent(WorldObject):
 	def __init__(self, name, x, y):
@@ -39,6 +43,7 @@ class Agent(WorldObject):
 	def Reset(self):
 		self.SetPos(self.InitialPosX, self.InitialPosY)
 
+
 class GridWorld:
 	def __init__(self, grid, agents, doors, doorButtons, goalButtons):
 		self.Grid = grid #array of arrays
@@ -46,6 +51,32 @@ class GridWorld:
 		self.Doors = doors #dictionary
 		self.DoorButtons = doorButtons #dictionary
 		self.GoalButtons = goalButtons #dictionary
+
+
+	#return True only if there is door in position (x,y) and the door is not open
+	def IsLockedDoor(self, x, y):
+		for doorName in self.Doors:
+			d = self.Doors[doorName]
+			if d.PosX == x and d.PosY == y and d.IsOpen == False:
+				return True
+		return False
+
+
+	def GetUnpressedDoorButton(self, x, y):
+		for buttonName in self.DoorButtons:
+			b = self.DoorButtons[buttonName]
+			if b.PosX == x and b.PosY == y and b.WasPressed == False:
+				return b
+		return None
+	
+
+	def GetUnpressedGoalButton(self, x, y):
+		for buttonName in self.GoalButtons:
+			b = self.GoalButtons[buttonName]
+			if b.PosX == x and b.PosY == y and b.WasPressed == False:
+				return b
+		return None
+
 
 	def Reset(self):
 		for agent in self.Agents.values():
@@ -57,8 +88,56 @@ class GridWorld:
 		for goalButton in self.GoalButtons.values():
 			goalButton.Reset()
 
-	def Print(self):
-		grid = self.Grid.copy()
+
+	def CheckGoal(self):
+		for buttonName in self.GoalButtons:
+			b = self.GoalButtons[buttonName]
+			if not b.WasPressed:
+				return False
+		return True
+
+
+	def Step(self, agentName, action):
+		a = self.Agents[agentName]
+		newX = a.PosX
+		newY = a.PosY
+		reward = -1
+		done = self.CheckGoal()
+
+		if action == 5: #NOTHING
+			reward = 0
+		elif action == 4: #PRESS
+			b = self.GetUnpressedDoorButton(newX, newY)
+			if b != None:
+				b.WasPressed = True
+			else:
+				b = self.GetUnpressedGoalButton(newX, newY)
+				if b != None:
+					b.WasPressed = True
+		else: #moving actions
+			if action == 0: #UP
+				newX -= 1
+			elif action == 1: #DOWN
+				newX += 1
+			elif action == 2:	#LEFT
+				newY -= 1
+			elif action == 3: #RIGHT
+				newY += 1
+
+			if self.Grid[newX][newY] != "w" and not self.IsLockedDoor(newX, newY):
+				a.PosX = newX
+				a.PosY = newY
+
+		#for a in self.Agents.values():
+			#print(a.Name + ": " + str(a.PosX) + "," + str(a.PosY))
+		return reward, done
+
+
+	def Render(self):
+		grid = []
+		for i in self.Grid:
+			grid.append(i.copy())
+
 		for agentName in self.Agents:
 			a = self.Agents[agentName]
 			x = a.PosX
@@ -91,8 +170,7 @@ class GridWorld:
 			print(printableRow)
 
 
-
-def CreateGridWorld(filename):
+def CreateGridWorld(filename, a0):
 	file = open(filename)
 	lines = file.readlines()
 	startReadingGrid = False
@@ -134,8 +212,12 @@ def CreateGridWorld(filename):
 					doors[doorName].SetPos(rowNum, colNum)
 				elif "a" in cell:
 					agentName = cell[cell.index("agent"):]
-					agent = Agent(agentName, rowNum, colNum)
-					agents[agentName] = agent
+					if agentName == a0.Name:
+						agents[agentName] = a0
+						a0.SetInitialPosition(rowNum, colNum)
+					else:
+						agent = Agent(agentName, rowNum, colNum)
+						agents[agentName] = agent
 
 				colNum += 1
 			colNum = 0
