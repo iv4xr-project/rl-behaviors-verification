@@ -108,8 +108,8 @@ class GridWorld:
 		reward = -1
 		done = self.CheckGoal()
 
-		#if action == 5: #NOTHING
-			#reward = 0
+		if action == 5: #NOTHING
+			reward = -0.5
 		if action == 4: #PRESS
 			b = self.GetUnpressedDoorButton(newX, newY)
 			if b != None:
