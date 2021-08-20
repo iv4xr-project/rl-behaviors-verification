@@ -50,7 +50,7 @@ class GridWorld:
 		return True
 
 
-	def Step(self, agentName, action):
+	def StepSingleAgent(self, agentName, action):
 		a = self.Agents[agentName]
 		newX = a.PosX
 		newY = a.PosY
@@ -80,6 +80,48 @@ class GridWorld:
 			if self.Grid[newX][newY] != "w" and not self.IsLockedDoor(newX, newY):
 				a.PosX = newX
 				a.PosY = newY
+		
+		if done:
+			reward = 100
+		return reward, done
+
+
+	def StepDecentralized(self, action0, action1):
+		reward = -1
+		done = self.CheckGoal()
+
+		for i in range(2):
+			action = action0
+			a = self.Agents["agent0"]
+			if i == 1:
+				action = action1
+				a = self.Agents["agent1"]
+			newX = a.PosX
+			newY = a.PosY
+
+			if action == 5: #NOTHING
+				reward = -0.5
+			if action == 4: #PRESS
+				b = self.GetUnpressedDoorButton(newX, newY)
+				if b != None:
+					b.Press()
+				else:
+					b = self.GetUnpressedGoalButton(newX, newY)
+					if b != None:
+						b.Press()
+			else: #moving actions
+				if action == 0: #UP
+					newX -= 1
+				elif action == 1: #DOWN
+					newX += 1
+				elif action == 2:	#LEFT
+					newY -= 1
+				elif action == 3: #RIGHT
+					newY += 1
+
+				if self.Grid[newX][newY] != "w" and not self.IsLockedDoor(newX, newY):
+					a.PosX = newX
+					a.PosY = newY
 		
 		if done:
 			reward = 100
@@ -127,5 +169,64 @@ class GridWorld:
 				else:
 					printableRow += row[i]
 			print(printableRow)
+
+
+	def GetState(self):
+		agent0 = self.Agents["agent0"]
+		agent1 = self.Agents["agent1"]
+
+		state = ""
+		if agent0.PosX < 10:
+			state += "0"
+		state += str(agent0.PosX)
+		if agent0.PosY < 10:
+			state += "0"
+		state += str(agent1.PosY)
+		if agent1.PosX < 10:
+			state += "0"
+		state += str(agent1.PosX)
+		if agent1.PosY < 10:
+			state += "0"
+		state += str(agent0.PosY)
+		for b in self.DoorButtons.values():
+			if b.WasPressed:
+				state += "1"
+			else:
+				state += "0"
+		for b in self.GoalButtons.values():
+			if b.WasPressed:
+				state += "1"
+			else:
+				state += "0"
+		return state
+
+
+	#two agents learn individually their actions
+	def LearnDecentralized(self):
+		agent0 = self.Agents["agent0"]
+		agent1 = self.Agents["agent1"]
+
+		for i in range(100):
+			step = 0
+			done = False
+			self.Reset()
+
+			while step < 1500 and not done:
+				step += 1
+				prevState = self.GetState()
+				action0 = agent0.ChooseActionEgreedy(prevState)
+				action1 = agent1.ChooseActionEgreedy(prevState)
+				reward, done = self.StepDecentralized(action0, action1)
+				nextState = self.GetState()
+				agent0.Learn(prevState, action0, nextState, reward)
+				agent1.Learn(prevState, action1, nextState, reward)
+			print("Episode: " + str(i) + " Steps: " + str(step))
+
+
+
+	#one agent learns the actions of two agents together
+	#def LearnCentralized(self):
+
+
 
 

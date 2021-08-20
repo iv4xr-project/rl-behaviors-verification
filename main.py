@@ -8,10 +8,11 @@ if __name__ == "__main__":
 	env = CreateGridWorld("scenarios/scenario1.txt", agent0, agent1) #ep 300 stepsMax 1000
 	#env = CreateGridWorld("scenarios/scenario2.txt", agent0, agent1) #ep 300 stepsMax 1000
 	#env = CreateGridWorld("scenarios/scenario3.txt", agent0, agent1) #ep 300 stepsMax 1000
-	agent0.Learn(env)
-	agent0.Eval(env)
+	#agent0.Learn(env)
+	#agent0.Eval(env)
 	#agent1.Learn(env)
 	#agent1.Eval(env)
 
+	env.LearnDecentralized()
 
 

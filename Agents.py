@@ -70,7 +70,7 @@ class RLAgent(WorldObject):
 			step += 1
 			state = self.GetState(env)
 			action = self.Act(state)
-			_, done = env.Step(self.Name, action)
+			_, done = env.StepSingleAgent(self.Name, action)
 			env.Render()
 		print("Total Steps: " + str(step))
 
@@ -119,8 +119,19 @@ class RLAgent(WorldObject):
 			return self.ChooseCurrentBestAction(state)
 
 
+	def Learn(self, prevState, action, nextState, reward):
+		self.UpdateQTable(prevState, action, nextState, reward)
+		self.UpdateModel(prevState, action, nextState, reward)
+
+		for j in range(self.PlanningStep):
+			randomState = choice(list(self.Model.keys()))
+			randomAction = choice(list(self.Model[randomState].keys()))
+			predictedState, predictedReward = self.Model[randomState][randomAction]
+			self.UpdateQTable(randomState, randomAction, predictedState, predictedReward)
+			
+
 	#using dynaQ
-	def Learn(self, env):
+	def LearnDynaQ(self, env):
 		for i in range(300):
 			step = 0
 			done = False
@@ -130,7 +141,7 @@ class RLAgent(WorldObject):
 				step += 1
 				prevState = self.GetState(env)
 				action = self.ChooseActionEgreedy(prevState)
-				reward, done = env.Step(self.Name, action)
+				reward, done = env.StepSingleAgent(self.Name, action)
 				nextState = self.GetState(env)
 				self.UpdateQTable(prevState, action, nextState, reward)
 				self.UpdateModel(prevState, action, nextState, reward)
