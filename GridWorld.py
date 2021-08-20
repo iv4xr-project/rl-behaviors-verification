@@ -118,7 +118,6 @@ class GridWorld:
 				b = self.GetUnpressedGoalButton(newX, newY)
 				if b != None:
 					b.Press()
-					print("pressed goal button")
 		else: #moving actions
 			if action == 0: #UP
 				newX -= 1

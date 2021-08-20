@@ -48,27 +48,20 @@ class RLAgent(WorldObject):
 
 
 	def Act(self, state):
-		actionStateRewards = self.Model[state]
-		top = float("-inf")
-		bestActions = []
-
-		for a in actionStateRewards.keys():
-			if actionStateRewards[a][1] > top:
-				top = actionStateRewards[a][1]
-				bestActions = [a]
-			elif actionStateRewards[a][1] == top:
-				bestActions.append(a)
-
-		return choice(bestActions)
+		return self.ChooseCurrentBestAction(state)
 
 
 	def Eval(self, env):
 		env.Reset()
-		for i in range(50):
+		step = 0
+		done = False
+		while step < 60 and not done:
+			step += 1
 			state = self.GetState(env)
 			action = self.Act(state)
-			env.Step(self.Name, action)
+			_, done = env.Step(self.Name, action)
 			env.Render()
+		print("Total Steps: " + str(step))
 
 
 
@@ -138,9 +131,7 @@ class RLAgent(WorldObject):
 					randomAction = choice(list(self.Model[randomState].keys()))
 					predictedState, predictedReward = self.Model[randomState][randomAction]
 					self.UpdateQTable(randomState, randomAction, predictedState, predictedReward)
-				#env.Render()
-			print(step)
-		env.Render()
+			print("Episode: " + str(i) + " Steps: " + str(step))
 
 
 
@@ -148,11 +139,8 @@ class RLAgent(WorldObject):
 if __name__ == "__main__":
 	agent = RLAgent("agent0", ["UP", "DOWN", "LEFT", "RIGHT", "PRESS", "NOTHING"], 0.1, 0.95, 0.1, 10)
 	env = CreateGridWorld("scenarios/scenario1.txt", agent)
-	#agent.SetInitialPosition(gridWorld.Agents["agent0"].InitialPosX, gridWorld.Agents["agent0"].InitialPosY)
-
 	agent.Learn(env)
-	print(agent.Model["11071110"])
-	#agent.Eval(env)
+	agent.Eval(env)
 
 
 
