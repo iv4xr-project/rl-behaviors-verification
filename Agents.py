@@ -1,4 +1,4 @@
-from GridWorld import *
+from WorldObjects import *
 from random import random, choice, randrange
 
 
