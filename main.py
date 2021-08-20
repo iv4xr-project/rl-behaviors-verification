@@ -119,8 +119,6 @@ class RLAgent(WorldObject):
 				step += 1
 				prevState = self.GetState(env)
 				action = self.ChooseActionEgreedy(prevState)
-				#if self.PosX == 5 and self.PosY == 4:
-				#	print("ACTION: " + self.Actions[action])
 				reward, done = env.Step(self.Name, action)
 				nextState = self.GetState(env)
 				self.UpdateQTable(prevState, action, nextState, reward)
@@ -138,7 +136,9 @@ class RLAgent(WorldObject):
 
 if __name__ == "__main__":
 	agent = RLAgent("agent0", ["UP", "DOWN", "LEFT", "RIGHT", "PRESS", "NOTHING"], 0.1, 0.95, 0.1, 10)
-	env = CreateGridWorld("scenarios/scenario1.txt", agent)
+	env = CreateGridWorld("scenarios/scenario1.txt", agent) #ep 300 stepsMax 100
+	#env = CreateGridWorld("scenarios/scenario2.txt", agent) #ep 300 stepsMax 100
+	#env = CreateGridWorld("scenarios/scenario3.txt", agent) #ep 300 stepsMax 100
 	agent.Learn(env)
 	agent.Eval(env)
 
