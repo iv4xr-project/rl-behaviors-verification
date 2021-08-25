@@ -100,7 +100,7 @@ class GridWorld:
 			newY = a.PosY
 
 			if action == 5: #NOTHING
-				reward = -0.5
+				reward = -0.1
 			if action == 4: #PRESS
 				b = self.GetUnpressedDoorButton(newX, newY)
 				if b != None:
@@ -201,17 +201,35 @@ class GridWorld:
 		return state
 
 
+	def EvalAgents(self):
+		agent0 = self.Agents["agent0"]
+		agent1 = self.Agents["agent1"]
+
+		self.Reset()
+		step = 0
+		done = False
+		while step < 60 and not done:
+			step += 1
+			state = self.GetState()
+			action0 = agent0.Act(state)
+			action1 = agent1.Act(state)
+			_, done = self.StepDecentralized(action0, action1)
+			self.Render()
+			input("This was the " + str(step) + " th step: (a0," + agent0.Actions[action0] + ") (a1," + agent1.Actions[action1] + "). Press any key to continue.")
+		print("Total Steps: " + str(step))
+
+
 	#two agents learn individually their actions
 	def LearnDecentralized(self):
 		agent0 = self.Agents["agent0"]
 		agent1 = self.Agents["agent1"]
 
-		for i in range(100):
+		for i in range(400):
 			step = 0
 			done = False
 			self.Reset()
 
-			while step < 1500 and not done:
+			while step < 750 and not done:
 				step += 1
 				prevState = self.GetState()
 				action0 = agent0.ChooseActionEgreedy(prevState)
