@@ -224,12 +224,12 @@ class GridWorld:
 		agent0 = self.Agents["agent0"]
 		agent1 = self.Agents["agent1"]
 
-		for i in range(300):
+		for i in range(100):
 			step = 0
 			done = False
 			self.Reset()
 
-			while step < 1000 and not done:
+			while step < 100 and not done:
 				step += 1
 				prevState = self.GetState()
 				action0 = agent0.ChooseActionEgreedy(prevState)
