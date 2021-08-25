@@ -99,8 +99,8 @@ class GridWorld:
 			newX = a.PosX
 			newY = a.PosY
 
-			if action == 5: #NOTHING
-				reward = -0.1
+			#if action == 5: #NOTHING
+				#reward = -0.8
 			if action == 4: #PRESS
 				b = self.GetUnpressedDoorButton(newX, newY)
 				if b != None:
@@ -124,7 +124,7 @@ class GridWorld:
 					a.PosY = newY
 		
 		if done:
-			reward = 100
+			reward = 1000
 		return reward, done
 
 
@@ -181,13 +181,13 @@ class GridWorld:
 		state += str(agent0.PosX)
 		if agent0.PosY < 10:
 			state += "0"
-		state += str(agent1.PosY)
+		state += str(agent0.PosY)
 		if agent1.PosX < 10:
 			state += "0"
 		state += str(agent1.PosX)
 		if agent1.PosY < 10:
 			state += "0"
-		state += str(agent0.PosY)
+		state += str(agent1.PosY)
 		for b in self.DoorButtons.values():
 			if b.WasPressed:
 				state += "1"
@@ -224,12 +224,12 @@ class GridWorld:
 		agent0 = self.Agents["agent0"]
 		agent1 = self.Agents["agent1"]
 
-		for i in range(400):
+		for i in range(300):
 			step = 0
 			done = False
 			self.Reset()
 
-			while step < 750 and not done:
+			while step < 1000 and not done:
 				step += 1
 				prevState = self.GetState()
 				action0 = agent0.ChooseActionEgreedy(prevState)
