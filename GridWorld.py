@@ -106,9 +106,11 @@ class GridWorld:
 				b = self.GetUnpressedDoorButton(newX, newY)
 				if b != None:
 					b.Press()
+					reward = 100
 				else:
 					b = self.GetUnpressedGoalButton(newX, newY)
 					if b != None:
+						reward = 100
 						b.Press()
 			else: #moving actions
 				if action == 0: #UP
@@ -230,7 +232,7 @@ class GridWorld:
 			done = False
 			self.Reset()
 
-			while step < 1000 and not done:
+			while step < 1500 and not done:
 				step += 1
 				prevState = self.GetState()
 				action0 = agent0.ChooseActionEgreedy(prevState)
@@ -239,7 +241,7 @@ class GridWorld:
 				nextState = self.GetState()
 				agent0.Learn(prevState, action0, nextState, reward)
 				agent1.Learn(prevState, action1, nextState, reward)
-			print("Episode: " + str(i) + " Steps: " + str(step))
+			print("Episode: " + str(i) + " Steps: " + str(step) + " Epsilon: " + str(agent0.Epsilon))
 
 
 
@@ -285,7 +287,7 @@ class GridWorld:
 			file.close()
 
 
-	def LoadAgentsQtableFromFile(self, isCentralized, scenario, env):
+	def LoadAgentsQtableFromFile(self, isCentralized, scenario):
 		if isCentralized:
 			filename = "policies/qvalues-centralized-s" + scenario + ".txt"
 		else:
@@ -311,9 +313,9 @@ class GridWorld:
 								state = val
 							else:
 								qValues.append(float(val))
-						if not agentName in env.Agents:
+						if not agentName in self.Agents:
 							print("Agent name not found: " + agentName)
-						env.Agents[agentName].QTable[state] = qValues.copy()
+						self.Agents[agentName].QTable[state] = qValues.copy()
 				file.close()
 			except OSError as err:
 				print("File not found: policies/qvalues-decentralized-s" + scenario + ".txt " + err)

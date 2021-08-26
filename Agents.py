@@ -13,11 +13,14 @@ class Agent(WorldObject):
 
 
 class RLAgent(WorldObject):
-	def __init__(self, name, actions, stepSize, discount, epsilon, planningStep):
+	def __init__(self, name, actions, stepSize, discount, epsilonMax, epsilonMin, epsilonDecay, planningStep):
 		WorldObject.__init__(self, name)
 		self.StepSize = stepSize
 		self.Discount = discount
-		self.Epsilon = epsilon
+		self.EpsilonMax = epsilonMax
+		self.Epsilon = epsilonMax
+		self.EpsilonMin = epsilonMin
+		self.EpsilonDecay = epsilonDecay
 		self.PlanningStep = planningStep
 		self.Model = {}
 		self.QTable = {}
@@ -113,6 +116,7 @@ class RLAgent(WorldObject):
 
 
 	def ChooseActionEgreedy(self, state):
+		self.Epsilon = max(self.EpsilonMin, self.Epsilon * self.EpsilonDecay)
 		if random() < self.Epsilon:
 			return randrange(len(self.Actions.keys()))
 		else:
