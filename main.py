@@ -16,6 +16,7 @@ if __name__ == "__main__":
 			env.LearnCentralized()
 		else:
 			env.LearnDecentralized()
+			env.EvalAgents()
 		
 		env.WriteAgentsQtableToFile(isCentralized, scenario)
 
@@ -27,7 +28,7 @@ if __name__ == "__main__":
 		agent1 = RLAgent("agent1", ["UP", "DOWN", "LEFT", "RIGHT", "PRESS", "NOTHING"], 0.1, 0.99, 0.1, 10)
 		env = CreateGridWorld("scenarios/scenario" + scenario + ".txt", agent0, agent1)
 
-		env.LoadAgentsQtableFromFile(isCentralized, scenario)
+		env.LoadAgentsQtableFromFile(isCentralized, scenario, env)
 		env.EvalAgents()
 
 	else:

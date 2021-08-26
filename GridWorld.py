@@ -225,12 +225,12 @@ class GridWorld:
 		agent0 = self.Agents["agent0"]
 		agent1 = self.Agents["agent1"]
 
-		for i in range(10):
+		for i in range(300):
 			step = 0
 			done = False
 			self.Reset()
 
-			while step < 10 and not done:
+			while step < 1000 and not done:
 				step += 1
 				prevState = self.GetState()
 				action0 = agent0.ChooseActionEgreedy(prevState)
@@ -285,11 +285,38 @@ class GridWorld:
 			file.close()
 
 
-	def LoadAgentsQtableFromFile(self, isCentralized, scenario):
+	def LoadAgentsQtableFromFile(self, isCentralized, scenario, env):
 		if isCentralized:
 			filename = "policies/qvalues-centralized-s" + scenario + ".txt"
 		else:
 			filename = "policies/qvalues-decentralized-s" + scenario + ".txt"
+			try:
+				file = open(filename, "r")
+				agentName = ""
+				readingQvalues = False
+				for line in file:
+					if agentName == "":
+						agentName = line[:-1]
+					elif line.startswith("actions"):
+						readingQvalues = True
+					elif line.startswith("---"):
+						readingQvalues = False
+						agentName = ""
+					elif readingQvalues:
+						splittedLine = line[:-1].split(" ")
+						state = ""
+						qValues = []
+						for val in splittedLine:
+							if state == "":
+								state = val
+							else:
+								qValues.append(float(val))
+						if not agentName in env.Agents:
+							print("Agent name not found: " + agentName)
+						env.Agents[agentName].QTable[state] = qValues.copy()
+				file.close()
+			except OSError as err:
+				print("File not found: policies/qvalues-decentralized-s" + scenario + ".txt " + err)
 
 
 
