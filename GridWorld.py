@@ -1,4 +1,5 @@
 from WorldObjects import *
+import os
 
 
 class GridWorld:
@@ -224,12 +225,12 @@ class GridWorld:
 		agent0 = self.Agents["agent0"]
 		agent1 = self.Agents["agent1"]
 
-		for i in range(100):
+		for i in range(10):
 			step = 0
 			done = False
 			self.Reset()
 
-			while step < 100 and not done:
+			while step < 10 and not done:
 				step += 1
 				prevState = self.GetState()
 				action0 = agent0.ChooseActionEgreedy(prevState)
@@ -243,8 +244,52 @@ class GridWorld:
 
 
 	#one agent learns the actions of two agents together
-	#def LearnCentralized(self):
+	def LearnCentralized(self):
+		print("LearnCentralized: Not Implemented!")
 
+
+	def WriteAgentsQtableToFile(self, isCentralized, scenario):
+		directory = "policies"
+		if not os.path.exists(directory):
+			os.makedirs(directory)
+		
+		if isCentralized:
+			filename = directory + "/qvalues-centralized-s" + scenario + ".txt"
+			file = open(filename, "w")
+			for agent in self.Agents.values():
+				states = []
+				file.write(agent.Name + "\n")
+				file.write("actions")
+				for action in agent.Actions.values():
+					file.write(" " + action)
+				for state in agent.QTable.keys():
+					file.write("\n" + state)
+					for qvalue in agent.QTable[state]:
+						file.write(" " + str(qvalue))
+				file.write("\n---\n")
+			file.close()
+		else:
+			filename = directory + "/qvalues-decentralized-s" + scenario + ".txt"
+			file = open(filename, "w")
+			for agent in self.Agents.values():
+				states = []
+				file.write(agent.Name + "\n")
+				file.write("actions")
+				for action in agent.Actions.values():
+					file.write(" " + action)
+				for state in agent.QTable.keys():
+					file.write("\n" + state)
+					for qvalue in agent.QTable[state]:
+						file.write(" " + str(qvalue))
+				file.write("\n---\n")
+			file.close()
+
+
+	def LoadAgentsQtableFromFile(self, isCentralized, scenario):
+		if isCentralized:
+			filename = "policies/qvalues-centralized-s" + scenario + ".txt"
+		else:
+			filename = "policies/qvalues-decentralized-s" + scenario + ".txt"
 
 
 
