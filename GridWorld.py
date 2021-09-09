@@ -83,7 +83,7 @@ class GridWorld:
 				a.PosY = newY
 		
 		if done:
-			reward = 100
+			reward = 2000
 		return reward, done
 
 
@@ -106,11 +106,11 @@ class GridWorld:
 				b = self.GetUnpressedDoorButton(newX, newY)
 				if b != None:
 					b.Press()
-					reward = 100
+					#reward = 100
 				else:
 					b = self.GetUnpressedGoalButton(newX, newY)
 					if b != None:
-						reward = 100
+						#reward = 100
 						b.Press()
 			else: #moving actions
 				if action == 0: #UP
@@ -127,7 +127,7 @@ class GridWorld:
 					a.PosY = newY
 		
 		if done:
-			reward = 1000
+			reward = 100
 		return reward, done
 
 
@@ -227,7 +227,7 @@ class GridWorld:
 		agent0 = self.Agents["agent0"]
 		agent1 = self.Agents["agent1"]
 
-		for i in range(300):
+		for i in range(500):
 			step = 0
 			done = False
 			self.Reset()

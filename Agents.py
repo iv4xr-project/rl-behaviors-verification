@@ -141,7 +141,7 @@ class RLAgent(WorldObject):
 			done = False
 			env.Reset()
 
-			while step < 1000 and not done:
+			while step < 1500 and not done:
 				step += 1
 				prevState = self.GetState(env)
 				action = self.ChooseActionEgreedy(prevState)
