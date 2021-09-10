@@ -83,7 +83,7 @@ class GridWorld:
 				a.PosY = newY
 		
 		if done:
-			reward = 2000
+			reward = 100
 		return reward, done
 
 
@@ -127,7 +127,7 @@ class GridWorld:
 					a.PosY = newY
 		
 		if done:
-			reward = 100
+			reward = 1000
 		return reward, done
 
 
@@ -227,7 +227,7 @@ class GridWorld:
 		agent0 = self.Agents["agent0"]
 		agent1 = self.Agents["agent1"]
 
-		for i in range(500):
+		for i in range(1500):
 			step = 0
 			done = False
 			self.Reset()
