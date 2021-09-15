@@ -8,16 +8,23 @@ if __name__ == "__main__":
 		isCentralized = (sys.argv[2] == "-centralized")
 		scenario = sys.argv[3][-1]
 
-		agent0 = RLAgent("agent0", ["UP", "DOWN", "LEFT", "RIGHT", "PRESS", "NOTHING"], 0.1, 0.999, 1.0, 0.05, 0.999995, 10)
-		agent1 = RLAgent("agent1", ["UP", "DOWN", "LEFT", "RIGHT", "PRESS", "NOTHING"], 0.1, 0.999, 1.0, 0.05, 0.999995, 10)
+		agent0 = RLAgent("agent0", ["UP", "DOWN", "LEFT", "RIGHT", "PRESS", "NOTHING"], 0.1, 0.999, 1.0, 0.05, 10)
+		agent1 = RLAgent("agent1", ["UP", "DOWN", "LEFT", "RIGHT", "PRESS", "NOTHING"], 0.1, 0.999, 1.0, 0.05, 10)
 		env = CreateGridWorld("scenarios/scenario" + scenario + ".txt", agent0, agent1)
 
 		if isCentralized:
 			env.LearnCentralized()
 		else:
-			env.LearnDecentralized()
-			env.EvalAgents()
-		
+			if scenario == "1":
+				env.LearnDecentralized(500, 500)
+			elif scenario == "2":
+				env.LearnDecentralized(500, 800)
+			elif scenario == "3":
+				env.LearnDecentralized(2000, 1500)
+			else:
+				print("Unknown scenario.")
+			
+		env.EvalAgents()
 		env.WriteAgentsQtableToFile(isCentralized, scenario)
 
 	elif len(sys.argv) == 4 and sys.argv[1] == "-run" and (sys.argv[2] == "-centralized" or sys.argv[2] == "-decentralized") and (sys.argv[3] == "-s1" or sys.argv[3] == "-s2" or sys.argv[3] == "-s3"):

@@ -223,20 +223,22 @@ class GridWorld:
 
 
 	#two agents learn individually their actions
-	def LearnDecentralized(self):
+	def LearnDecentralized(self, episodes, maxSteps):
 		agent0 = self.Agents["agent0"]
 		agent1 = self.Agents["agent1"]
 
-		for i in range(1500):
+		for i in range(episodes):
 			step = 0
 			done = False
 			self.Reset()
 
-			while step < 1500 and not done:
+			while step < maxSteps and not done:
 				step += 1
 				prevState = self.GetState()
 				action0 = agent0.ChooseActionEgreedy(prevState)
 				action1 = agent1.ChooseActionEgreedy(prevState)
+				agent0.UpdateEpsilon(i, episodes)
+				agent1.UpdateEpsilon(i, episodes)
 				reward, done = self.StepDecentralized(action0, action1)
 				nextState = self.GetState()
 				agent0.Learn(prevState, action0, nextState, reward)
