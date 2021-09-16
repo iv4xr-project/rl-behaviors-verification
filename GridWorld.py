@@ -101,7 +101,7 @@ class GridWorld:
 			newY = a.PosY
 
 			#if action == 5: #NOTHING
-				#reward = -0.8
+				#reward = 0
 			if action == 4: #PRESS
 				b = self.GetUnpressedDoorButton(newX, newY)
 				if b != None:
@@ -127,7 +127,7 @@ class GridWorld:
 					a.PosY = newY
 		
 		if done:
-			reward = 1000
+			reward = 100
 		return reward, done
 
 
