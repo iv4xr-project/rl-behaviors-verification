@@ -31,8 +31,8 @@ if __name__ == "__main__":
 		isCentralized = (sys.argv[2] == "-centralized")
 		scenario = sys.argv[3][-1]
 
-		agent0 = RLAgent("agent0", ["UP", "DOWN", "LEFT", "RIGHT", "PRESS", "NOTHING"], 0.1, 0.99, 0.05, 0.05, 0.0, 10)
-		agent1 = RLAgent("agent1", ["UP", "DOWN", "LEFT", "RIGHT", "PRESS", "NOTHING"], 0.1, 0.99, 0.05, 0.05, 0.0, 10)
+		agent0 = RLAgent("agent0", ["UP", "DOWN", "LEFT", "RIGHT", "PRESS", "NOTHING"], 0.1, 0.999, 0.0, 0.0, 10)
+		agent1 = RLAgent("agent1", ["UP", "DOWN", "LEFT", "RIGHT", "PRESS", "NOTHING"], 0.1, 0.999, 0.0, 0.0, 10)
 		env = CreateGridWorld("scenarios/scenario" + scenario + ".txt", agent0, agent1)
 
 		env.LoadAgentsQtableFromFile(isCentralized, scenario)
