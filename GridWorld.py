@@ -88,7 +88,8 @@ class GridWorld:
 
 
 	def StepDecentralized(self, action0, action1):
-		reward = -1
+		reward0 = -1
+		reward1 = -1
 		done = self.CheckGoal()
 
 		for i in range(2):
@@ -100,8 +101,11 @@ class GridWorld:
 			newX = a.PosX
 			newY = a.PosY
 
-			#if action == 5: #NOTHING
-				#reward = 0
+			if action == 5: #NOTHING
+				if i == 0:
+					reward0 = 0
+				elif i == 1:
+					reward1 = 0
 			if action == 4: #PRESS
 				b = self.GetUnpressedDoorButton(newX, newY)
 				if b != None:
@@ -127,8 +131,9 @@ class GridWorld:
 					a.PosY = newY
 		
 		if done:
-			reward = 100
-		return reward, done
+			reward0 = 100
+			reward1 = 100
+		return reward0, reward1, done
 
 
 	def Render(self):
@@ -174,23 +179,23 @@ class GridWorld:
 			print(printableRow)
 
 
-	def GetState(self):
-		agent0 = self.Agents["agent0"]
-		agent1 = self.Agents["agent1"]
+	def GetState(self, agent):
+		#agent0 = self.Agents["agent0"]
+		#agent1 = self.Agents["agent1"]
 
 		state = ""
-		if agent0.PosX < 10:
+		if agent.PosX < 10:
 			state += "0"
-		state += str(agent0.PosX)
-		if agent0.PosY < 10:
+		state += str(agent.PosX)
+		if agent.PosY < 10:
 			state += "0"
-		state += str(agent0.PosY)
-		if agent1.PosX < 10:
-			state += "0"
-		state += str(agent1.PosX)
-		if agent1.PosY < 10:
-			state += "0"
-		state += str(agent1.PosY)
+		state += str(agent.PosY)
+		#if agent1.PosX < 10:
+		#	state += "0"
+		#state += str(agent1.PosX)
+		#if agent1.PosY < 10:
+		#	state += "0"
+		#state += str(agent1.PosY)
 		for b in self.DoorButtons.values():
 			if b.WasPressed:
 				state += "1"
@@ -213,10 +218,11 @@ class GridWorld:
 		done = False
 		while step < 60 and not done:
 			step += 1
-			state = self.GetState()
-			action0 = agent0.Act(state)
-			action1 = agent1.Act(state)
-			_, done = self.StepDecentralized(action0, action1)
+			state0 = self.GetState(agent0)
+			state1 = self.GetState(agent1)
+			action0 = agent0.Act(state0)
+			action1 = agent1.Act(state1)
+			_, _,done = self.StepDecentralized(action0, action1)
 			self.Render()
 			input("This was the " + str(step) + " th step: (a0," + agent0.Actions[action0] + ") (a1," + agent1.Actions[action1] + "). Press any key to continue.")
 		print("Total Steps: " + str(step))
@@ -234,15 +240,17 @@ class GridWorld:
 
 			while step < maxSteps and not done:
 				step += 1
-				prevState = self.GetState()
-				action0 = agent0.ChooseActionEgreedy(prevState)
-				action1 = agent1.ChooseActionEgreedy(prevState)
+				prevState0 = self.GetState(agent0)
+				prevState1 = self.GetState(agent1)
+				action0 = agent0.ChooseActionEgreedy(prevState0)
+				action1 = agent1.ChooseActionEgreedy(prevState1)
 				agent0.UpdateEpsilon(i, episodes)
 				agent1.UpdateEpsilon(i, episodes)
-				reward, done = self.StepDecentralized(action0, action1)
-				nextState = self.GetState()
-				agent0.Learn(prevState, action0, nextState, reward)
-				agent1.Learn(prevState, action1, nextState, reward)
+				reward0, reward1, done = self.StepDecentralized(action0, action1)
+				nextState0 = self.GetState(agent0)
+				nextState1 = self.GetState(agent1)
+				agent0.Learn(prevState0, action0, nextState0, reward0)
+				agent1.Learn(prevState1, action1, nextState1, reward1)
 			print("Episode: " + str(i) + " Steps: " + str(step) + " Epsilon: " + str(agent0.Epsilon))
 
 
