@@ -12,7 +12,7 @@ class Agent(WorldObject):
 		self.SetPos(self.InitialPosX, self.InitialPosY)
 
 
-class RLAgent(WorldObject):
+class SingleAgent(WorldObject):
 	def __init__(self, name, actions, stepSize, discount, epsilonMax, epsilonMin, planningStep):
 		WorldObject.__init__(self, name)
 		self.StepSize = stepSize
@@ -158,3 +158,37 @@ class RLAgent(WorldObject):
 					predictedState, predictedReward = self.Model[randomState][randomAction]
 					self.UpdateQTable(randomState, randomAction, predictedState, predictedReward)
 			print("Episode: " + str(i) + " Steps: " + str(step))
+
+
+
+
+
+
+
+class DoubleAgent(SingleAgent):
+	def __init__(self, name0, name1, actions, stepSize, discount, epsilonMax, epsilonMin, planningStep):
+		super().__init__("centralized", actions, stepSize, discount, epsilonMax, epsilonMin, planningStep)
+		super().SetInitialPosition(-1, -1)
+		self.Name0 = name0
+		self.Name1 = name1
+
+
+	def Reset(self):
+		self.PosX0 = self.InitialPosX0
+		self.PosY0 = self.InitialPosY0
+		self.PosX1 = self.InitialPosX1
+		self.PosY1 = self.InitialPosY1
+
+
+	def SetInitialPosition(self, x, y):
+		print("ERROR: This method should not be called for an instance of DoubleAgent")
+
+
+	def SetInitialPosition0(self, x0, y0):
+		self.InitialPosX0 = x0
+		self.InitialPosY0 = y0
+
+
+	def SetInitialPosition1(self, x1, y1):
+		self.InitialPosX1 = x1
+		self.InitialPosY1 = y1

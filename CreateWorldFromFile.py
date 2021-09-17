@@ -1,4 +1,5 @@
 from GridWorld import *
+from Agents import *
 
 
 def CreateGridWorld(filename, a0, a1):
@@ -43,15 +44,26 @@ def CreateGridWorld(filename, a0, a1):
 					doors[doorName].SetPos(rowNum, colNum)
 				elif "a" in cell:
 					agentName = cell[cell.index("agent"):]
-					if agentName == a0.Name:
-						agents[agentName] = a0
-						a0.SetInitialPosition(rowNum, colNum)
-					elif agentName == a1.Name:
-						agents[agentName] = a1
-						a1.SetInitialPosition(rowNum, colNum)
+					if isinstance(a0, DoubleAgent):
+						if agentName == a0.Name0:
+							agents["centralized"] = a0
+							a0.SetInitialPosition0(rowNum, colNum)
+						elif agentName == a0.Name1:
+							agents["centralized"] = a0
+							a0.SetInitialPosition1(rowNum, colNum)
+						else:
+							agent = Agent(agentName, rowNum, colNum)
+							agents[agentName] = agent
 					else:
-						agent = Agent(agentName, rowNum, colNum)
-						agents[agentName] = agent
+						if agentName == a0.Name:
+							agents[agentName] = a0
+							a0.SetInitialPosition(rowNum, colNum)
+						elif agentName == a1.Name:
+							agents[agentName] = a1
+							a1.SetInitialPosition(rowNum, colNum)
+						else:
+							agent = Agent(agentName, rowNum, colNum)
+							agents[agentName] = agent
 
 				colNum += 1
 			colNum = 0

@@ -1,4 +1,5 @@
 from WorldObjects import *
+from Agents import *
 import os
 
 
@@ -136,6 +137,55 @@ class GridWorld:
 		return reward0, reward1, done
 
 
+	def StepCentralized(self, actions):
+		reward = -1
+		done = self.CheckGoal()
+
+		agents = self.Agents["centralized"]
+		action0 = agents.Actions[actions].split("-")[0]
+		action1 = agents.Actions[actions].split("-")[1]
+		action = action0
+		newX = agents.PosX0
+		newY = agents.PosY0
+		for i in range(2):
+			if i == 1:
+				action = action1
+				newX = agents.PosX1
+				newY = agents.PosY1
+
+			if action == "NOTHING":
+				reward = 0
+			if action == "PRESS":
+				b = self.GetUnpressedDoorButton(newX, newY)
+				if b != None:
+					b.Press()
+				else:
+					b = self.GetUnpressedGoalButton(newX, newY)
+					if b != None:
+						b.Press()
+			else: #moving actions
+				if action == "UP":
+					newX -= 1
+				elif action == "DOWN":
+					newX += 1
+				elif action == "LEFT":
+					newY -= 1
+				elif action == "RIGHT":
+					newY += 1
+
+				if self.Grid[newX][newY] != "w" and not self.IsLockedDoor(newX, newY):
+					if i == 0:
+						agents.PosX0 = newX
+						agents.PosY0 = newY
+					elif i == 1:
+						agents.PosX1 = newX
+						agents.PosY1 = newY
+		
+		if done:
+			reward = 100
+		return reward, done
+
+
 	def Render(self):
 		grid = []
 		for i in self.Grid:
@@ -163,9 +213,17 @@ class GridWorld:
 			else:
 				grid[x][y] = "d" + d.Name[-1]
 		for a in self.Agents.values():
-			x = a.PosX
-			y = a.PosY
-			grid[x][y] = "a" + a.Name[-1]
+			if isinstance(a, DoubleAgent):
+				x = a.PosX0
+				y = a.PosY0
+				grid[x][y] = "a" + a.Name0[-1]
+				x = a.PosX1
+				y = a.PosY1
+				grid[x][y] = "a" + a.Name1[-1]
+			else:
+				x = a.PosX
+				y = a.PosY
+				grid[x][y] = "a" + a.Name[-1]
 
 		for row in grid:
 			printableRow = ""
@@ -179,10 +237,7 @@ class GridWorld:
 			print(printableRow)
 
 
-	def GetState(self, agent):
-		#agent0 = self.Agents["agent0"]
-		#agent1 = self.Agents["agent1"]
-
+	def GetStatePartialObservability(self, agent):
 		state = ""
 		if agent.PosX < 10:
 			state += "0"
@@ -190,12 +245,6 @@ class GridWorld:
 		if agent.PosY < 10:
 			state += "0"
 		state += str(agent.PosY)
-		#if agent1.PosX < 10:
-		#	state += "0"
-		#state += str(agent1.PosX)
-		#if agent1.PosY < 10:
-		#	state += "0"
-		#state += str(agent1.PosY)
 		for b in self.DoorButtons.values():
 			if b.WasPressed:
 				state += "1"
@@ -209,7 +258,36 @@ class GridWorld:
 		return state
 
 
-	def EvalAgents(self):
+	def GetStateFullObservability(self):
+		agents = self.Agents["centralized"]
+
+		state = ""
+		if agents.PosX0 < 10:
+			state += "0"
+		state += str(agents.PosX0)
+		if agents.PosY0 < 10:
+			state += "0"
+		state += str(agents.PosY0)
+		if agents.PosX1 < 10:
+			state += "0"
+		state += str(agents.PosX1)
+		if agents.PosY1 < 10:
+			state += "0"
+		state += str(agents.PosY1)
+		for b in self.DoorButtons.values():
+			if b.WasPressed:
+				state += "1"
+			else:
+				state += "0"
+		for b in self.GoalButtons.values():
+			if b.WasPressed:
+				state += "1"
+			else:
+				state += "0"
+		return state
+
+
+	def EvalAgentsDecentralized(self):
 		agent0 = self.Agents["agent0"]
 		agent1 = self.Agents["agent1"]
 
@@ -218,13 +296,29 @@ class GridWorld:
 		done = False
 		while step < 60 and not done:
 			step += 1
-			state0 = self.GetState(agent0)
-			state1 = self.GetState(agent1)
+			state0 = self.GetStatePartialObservability(agent0)
+			state1 = self.GetStatePartialObservability(agent1)
 			action0 = agent0.Act(state0)
 			action1 = agent1.Act(state1)
 			_, _,done = self.StepDecentralized(action0, action1)
 			self.Render()
 			input("This was the " + str(step) + " th step: (a0," + agent0.Actions[action0] + ") (a1," + agent1.Actions[action1] + "). Press any key to continue.")
+		print("Total Steps: " + str(step))
+
+
+	def EvalAgentsCentralized(self):
+		agents = self.Agents["centralized"]
+
+		self.Reset()
+		step = 0
+		done = False
+		while step < 60 and not done:
+			step += 1
+			state = self.GetStateFullObservability()
+			actions = agents.Act(state)
+			_, done = self.StepCentralized(actions)
+			self.Render()
+			input("This was the " + str(step) + " th step: action0-action1 were " + agents.Actions[actions] + ". Press any key to continue.")
 		print("Total Steps: " + str(step))
 
 
@@ -240,15 +334,15 @@ class GridWorld:
 
 			while step < maxSteps and not done:
 				step += 1
-				prevState0 = self.GetState(agent0)
-				prevState1 = self.GetState(agent1)
+				prevState0 = self.GetStatePartialObservability(agent0)
+				prevState1 = self.GetStatePartialObservability(agent1)
 				action0 = agent0.ChooseActionEgreedy(prevState0)
 				action1 = agent1.ChooseActionEgreedy(prevState1)
 				agent0.UpdateEpsilon(i, episodes)
 				agent1.UpdateEpsilon(i, episodes)
 				reward0, reward1, done = self.StepDecentralized(action0, action1)
-				nextState0 = self.GetState(agent0)
-				nextState1 = self.GetState(agent1)
+				nextState0 = self.GetStatePartialObservability(agent0)
+				nextState1 = self.GetStatePartialObservability(agent1)
 				agent0.Learn(prevState0, action0, nextState0, reward0)
 				agent1.Learn(prevState1, action1, nextState1, reward1)
 			print("Episode: " + str(i) + " Steps: " + str(step) + " Epsilon: " + str(agent0.Epsilon))
@@ -256,8 +350,24 @@ class GridWorld:
 
 
 	#one agent learns the actions of two agents together
-	def LearnCentralized(self):
-		print("LearnCentralized: Not Implemented!")
+	def LearnCentralized(self, episodes, maxSteps):
+		agents = self.Agents["centralized"]
+
+		for i in range(episodes):
+			step = 0
+			done = False
+			self.Reset()
+
+			while step < maxSteps and not done:
+				step += 1
+				prevState = self.GetStateFullObservability()
+				actions = agents.ChooseActionEgreedy(prevState)
+				agents.UpdateEpsilon(i, episodes)
+				reward, done = self.StepCentralized(actions)
+				nextState = self.GetStateFullObservability()
+				agents.Learn(prevState, actions, nextState, reward)
+				#self.Render()
+			print("Episode: " + str(i) + " Steps: " + str(step) + " Epsilon: " + str(agents.Epsilon))
 
 
 	def WriteAgentsQtableToFile(self, isCentralized, scenario):
@@ -302,33 +412,34 @@ class GridWorld:
 			filename = "policies/qvalues-centralized-s" + scenario + ".txt"
 		else:
 			filename = "policies/qvalues-decentralized-s" + scenario + ".txt"
-			try:
-				file = open(filename, "r")
-				agentName = ""
-				readingQvalues = False
-				for line in file:
-					if agentName == "":
-						agentName = line[:-1]
-					elif line.startswith("actions"):
-						readingQvalues = True
-					elif line.startswith("---"):
-						readingQvalues = False
-						agentName = ""
-					elif readingQvalues:
-						splittedLine = line[:-1].split(" ")
-						state = ""
-						qValues = []
-						for val in splittedLine:
-							if state == "":
-								state = val
-							else:
-								qValues.append(float(val))
-						if not agentName in self.Agents:
-							print("Agent name not found: " + agentName)
-						self.Agents[agentName].QTable[state] = qValues.copy()
-				file.close()
-			except OSError as err:
-				print("File not found: policies/qvalues-decentralized-s" + scenario + ".txt " + err)
+		
+		try:
+			file = open(filename, "r")
+			agentName = ""
+			readingQvalues = False
+			for line in file:
+				if agentName == "":
+					agentName = line[:-1]
+				elif line.startswith("actions"):
+					readingQvalues = True
+				elif line.startswith("---"):
+					readingQvalues = False
+					agentName = ""
+				elif readingQvalues:
+					splittedLine = line[:-1].split(" ")
+					state = ""
+					qValues = []
+					for val in splittedLine:
+						if state == "":
+							state = val
+						else:
+							qValues.append(float(val))
+					if not agentName in self.Agents:
+						print("Agent name not found: " + agentName)
+					self.Agents[agentName].QTable[state] = qValues.copy()
+			file.close()
+		except OSError as err:
+			print("File not found: policies/qvalues-decentralized-s" + scenario + ".txt " + err)
 
 
 
