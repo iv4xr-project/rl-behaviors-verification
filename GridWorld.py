@@ -322,6 +322,7 @@ class GridWorld:
 		print("Total Steps: " + str(step))
 
 
+
 	#two agents learn individually their actions
 	def LearnDecentralized(self, episodes, maxSteps):
 		agent0 = self.Agents["agent0"]

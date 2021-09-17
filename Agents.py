@@ -137,27 +137,28 @@ class SingleAgent(WorldObject):
 			
 
 	#using dynaQ
-	def LearnDynaQ(self, env):
-		for i in range(300):
+	def LearnDynaQ(self, env, episodes, maxSteps):
+
+		for i in range(episodes):
 			step = 0
 			done = False
 			env.Reset()
 
-			while step < 1500 and not done:
+			while step < maxSteps and not done:
 				step += 1
-				prevState = self.GetState(env)
+				prevState = env.GetStatePartialObservability(self)
 				action = self.ChooseActionEgreedy(prevState)
+				self.UpdateEpsilon(i, episodes)
 				reward, done = env.StepSingleAgent(self.Name, action)
-				nextState = self.GetState(env)
-				self.UpdateQTable(prevState, action, nextState, reward)
-				self.UpdateModel(prevState, action, nextState, reward)
-
-				for j in range(self.PlanningStep):
-					randomState = choice(list(self.Model.keys()))
-					randomAction = choice(list(self.Model[randomState].keys()))
-					predictedState, predictedReward = self.Model[randomState][randomAction]
-					self.UpdateQTable(randomState, randomAction, predictedState, predictedReward)
-			print("Episode: " + str(i) + " Steps: " + str(step))
+				nextState = env.GetStatePartialObservability(self)
+				self.Learn(prevState, action, nextState, reward)
+		
+				#for j in range(self.PlanningStep):
+				#	randomState = choice(list(self.Model.keys()))
+				#	randomAction = choice(list(self.Model[randomState].keys()))
+				#	predictedState, predictedReward = self.Model[randomState][randomAction]
+				#	self.UpdateQTable(randomState, randomAction, predictedState, predictedReward)
+			print("Episode: " + str(i) + " Steps: " + str(step) + " Epsilon: " + str(self.Epsilon))
 
 
 

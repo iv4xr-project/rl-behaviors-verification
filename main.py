@@ -4,8 +4,9 @@ import sys
 
 
 if __name__ == "__main__":
-	if len(sys.argv) == 4 and sys.argv[1] == "-learn" and (sys.argv[2] == "-centralized" or sys.argv[2] == "-decentralized") and (sys.argv[3] == "-s1" or sys.argv[3] == "-s2" or sys.argv[3] == "-s3"):
+	if len(sys.argv) == 4 and sys.argv[1] == "-learn" and (sys.argv[2] == "-centralized" or sys.argv[2] == "-decentralized" or sys.argv[2] == "-singleagents") and (sys.argv[3] == "-s1" or sys.argv[3] == "-s2" or sys.argv[3] == "-s3"):
 		isCentralized = (sys.argv[2] == "-centralized")
+		isSingleAgents = (sys.argv[2] == "-singleagents")
 		scenario = sys.argv[3][-1]
 		
 		singleActions = ["UP", "DOWN", "LEFT", "RIGHT", "PRESS", "NOTHING"]
@@ -27,6 +28,22 @@ if __name__ == "__main__":
 			else:
 				print("Unknown scenario.")
 			env.EvalAgentsCentralized()
+		elif isSingleAgents:
+			agent0 = SingleAgent("agent0", singleActions, 0.1, 0.999, 1.0, 0.05, 10)
+			agent1 = SingleAgent("agent1", singleActions, 0.1, 0.999, 1.0, 0.05, 10)
+			env = CreateGridWorld("scenarios/scenario" + scenario + ".txt", agent0, agent1)
+
+			if scenario == "1":
+				agent0.LearnDynaQ(env, 500, 1000)
+				#agent1.LearnDynaQ(500, 500)
+			elif scenario == "2":
+				env.LearnDecentralized(500, 800)
+			elif scenario == "3":
+				env.LearnDecentralized(2000, 1500)
+			else:
+				print("Unknown scenario.")
+
+			env.EvalAgentsDecentralized()
 		else:
 			agent0 = SingleAgent("agent0", singleActions, 0.1, 0.999, 1.0, 0.05, 10)
 			agent1 = SingleAgent("agent1", singleActions, 0.1, 0.999, 1.0, 0.05, 10)
