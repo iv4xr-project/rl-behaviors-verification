@@ -5,13 +5,12 @@ import sys
 
 if __name__ == "__main__":
 	if len(sys.argv) == 4 and sys.argv[1] == "-learn" and (sys.argv[2] == "-centralized" or sys.argv[2] == "-decentralized" or sys.argv[2] == "-singleagents") and (sys.argv[3] == "-s1" or sys.argv[3] == "-s2" or sys.argv[3] == "-s3"):
-		isCentralized = (sys.argv[2] == "-centralized")
-		isSingleAgents = (sys.argv[2] == "-singleagents")
+		mode = sys.argv[2][1:]
 		scenario = sys.argv[3][-1]
 		
 		singleActions = ["UP", "DOWN", "LEFT", "RIGHT", "PRESS", "NOTHING"]
 
-		if isCentralized:
+		if mode == "centralized":
 			doubleActions = []
 			for a0 in singleActions:
 				for a1 in singleActions.copy():
@@ -28,14 +27,14 @@ if __name__ == "__main__":
 			else:
 				print("Unknown scenario.")
 			env.EvalAgentsCentralized()
-		elif isSingleAgents:
+		elif mode == "singleagents":
 			agent0 = SingleAgent("agent0", singleActions, 0.1, 0.999, 1.0, 0.05, 10)
 			agent1 = SingleAgent("agent1", singleActions, 0.1, 0.999, 1.0, 0.05, 10)
 			env = CreateGridWorld("scenarios/scenario" + scenario + ".txt", agent0, agent1)
 
 			if scenario == "1":
-				agent0.LearnDynaQ(env, 500, 1000)
-				#agent1.LearnDynaQ(500, 500)
+				agent0.LearnDynaQ(env, 500, 500)
+				agent1.LearnDynaQ(env, 500, 500)
 			elif scenario == "2":
 				env.LearnDecentralized(500, 800)
 			elif scenario == "3":
@@ -59,15 +58,14 @@ if __name__ == "__main__":
 				print("Unknown scenario.")
 
 			env.EvalAgentsDecentralized()
-		env.WriteAgentsQtableToFile(isCentralized, scenario)
+		env.WriteAgentsQtableToFile(mode, scenario)
 
 	elif len(sys.argv) == 4 and sys.argv[1] == "-run" and (sys.argv[2] == "-centralized" or sys.argv[2] == "-decentralized") and (sys.argv[3] == "-s1" or sys.argv[3] == "-s2" or sys.argv[3] == "-s3"):
-		isCentralized = (sys.argv[2] == "-centralized")
 		scenario = sys.argv[3][-1]
 
 		singleActions = ["UP", "DOWN", "LEFT", "RIGHT", "PRESS", "NOTHING"]
 
-		if isCentralized:
+		if mode == "centralized":
 			doubleActions = []
 			for a0 in singleActions:
 				for a1 in singleActions.copy():
@@ -75,14 +73,16 @@ if __name__ == "__main__":
 			agents = DoubleAgent("agent0", "agent1", doubleActions, 0.1, 0.999, 1.0, 0.05, 10)
 			env = CreateGridWorld("scenarios/scenario" + scenario + ".txt", agents, None)
 
-			env.LoadAgentsQtableFromFile(isCentralized, scenario)
+			env.LoadAgentsQtableFromFile(mode, scenario)
 			env.EvalAgentsCentralized()
+		elif mode == "singleagents":
+			print("NOT IMPLEMENTED!")
 		else:
 			agent0 = SingleAgent("agent0", ["UP", "DOWN", "LEFT", "RIGHT", "PRESS", "NOTHING"], 0.1, 0.999, 0.0, 0.0, 10)
 			agent1 = SingleAgent("agent1", ["UP", "DOWN", "LEFT", "RIGHT", "PRESS", "NOTHING"], 0.1, 0.999, 0.0, 0.0, 10)
 			env = CreateGridWorld("scenarios/scenario" + scenario + ".txt", agent0, agent1)
 
-			env.LoadAgentsQtableFromFile(isCentralized, scenario)
+			env.LoadAgentsQtableFromFile(mode, scenario)
 			env.EvalAgentsDecentralized()
 
 	else:

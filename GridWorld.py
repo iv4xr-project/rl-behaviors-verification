@@ -371,12 +371,12 @@ class GridWorld:
 			print("Episode: " + str(i) + " Steps: " + str(step) + " Epsilon: " + str(agents.Epsilon))
 
 
-	def WriteAgentsQtableToFile(self, isCentralized, scenario):
+	def WriteAgentsQtableToFile(self, mode, scenario):
 		directory = "policies"
 		if not os.path.exists(directory):
 			os.makedirs(directory)
 		
-		if isCentralized:
+		if mode == "centralized":
 			filename = directory + "/qvalues-centralized-s" + scenario + ".txt"
 			file = open(filename, "w")
 			for agent in self.Agents.values():
@@ -391,8 +391,23 @@ class GridWorld:
 						file.write(" " + str(qvalue))
 				file.write("\n---\n")
 			file.close()
-		else:
+		elif mode == "decentralized":
 			filename = directory + "/qvalues-decentralized-s" + scenario + ".txt"
+			file = open(filename, "w")
+			for agent in self.Agents.values():
+				states = []
+				file.write(agent.Name + "\n")
+				file.write("actions")
+				for action in agent.Actions.values():
+					file.write(" " + action)
+				for state in agent.QTable.keys():
+					file.write("\n" + state)
+					for qvalue in agent.QTable[state]:
+						file.write(" " + str(qvalue))
+				file.write("\n---\n")
+			file.close()
+		elif mode == "singleagents":
+			filename = directory + "/qvalues-singleagents-s" + scenario + ".txt"
 			file = open(filename, "w")
 			for agent in self.Agents.values():
 				states = []
@@ -408,11 +423,13 @@ class GridWorld:
 			file.close()
 
 
-	def LoadAgentsQtableFromFile(self, isCentralized, scenario):
-		if isCentralized:
+	def LoadAgentsQtableFromFile(self, mode, scenario):
+		if mode == "centralized":
 			filename = "policies/qvalues-centralized-s" + scenario + ".txt"
-		else:
+		elif mode == "decentralized":
 			filename = "policies/qvalues-decentralized-s" + scenario + ".txt"
+		elif mode == "singleagents":
+			filename = "policies/qvalues-singleagents-s" + scenario + ".txt"
 		
 		try:
 			file = open(filename, "r")
