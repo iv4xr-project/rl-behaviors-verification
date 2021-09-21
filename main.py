@@ -36,9 +36,11 @@ if __name__ == "__main__":
 				agent0.LearnDynaQ(env, 500, 500)
 				agent1.LearnDynaQ(env, 500, 500)
 			elif scenario == "2":
-				env.LearnDecentralized(500, 800)
+				agent0.LearnDynaQ(env, 500, 800)
+				agent1.LearnDynaQ(env, 500, 800)
 			elif scenario == "3":
-				env.LearnDecentralized(2000, 1500)
+				agent0.LearnDynaQ(env, 2000, 1500)
+				agent1.LearnDynaQ(env, 2000, 1500)
 			else:
 				print("Unknown scenario.")
 
@@ -60,7 +62,8 @@ if __name__ == "__main__":
 			env.EvalAgentsDecentralized()
 		env.WriteAgentsQtableToFile(mode, scenario)
 
-	elif len(sys.argv) == 4 and sys.argv[1] == "-run" and (sys.argv[2] == "-centralized" or sys.argv[2] == "-decentralized") and (sys.argv[3] == "-s1" or sys.argv[3] == "-s2" or sys.argv[3] == "-s3"):
+	elif len(sys.argv) == 4 and sys.argv[1] == "-run" and (sys.argv[2] == "-centralized" or sys.argv[2] == "-decentralized" or sys.argv[2] == "-singleagents") and (sys.argv[3] == "-s1" or sys.argv[3] == "-s2" or sys.argv[3] == "-s3"):
+		mode = sys.argv[2][1:]
 		scenario = sys.argv[3][-1]
 
 		singleActions = ["UP", "DOWN", "LEFT", "RIGHT", "PRESS", "NOTHING"]
@@ -75,8 +78,8 @@ if __name__ == "__main__":
 
 			env.LoadAgentsQtableFromFile(mode, scenario)
 			env.EvalAgentsCentralized()
-		elif mode == "singleagents":
-			print("NOT IMPLEMENTED!")
+		#elif mode == "singleagents":
+		#	print("NOT IMPLEMENTED!")
 		else:
 			agent0 = SingleAgent("agent0", ["UP", "DOWN", "LEFT", "RIGHT", "PRESS", "NOTHING"], 0.1, 0.999, 0.0, 0.0, 10)
 			agent1 = SingleAgent("agent1", ["UP", "DOWN", "LEFT", "RIGHT", "PRESS", "NOTHING"], 0.1, 0.999, 0.0, 0.0, 10)

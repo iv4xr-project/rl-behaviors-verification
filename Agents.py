@@ -138,11 +138,10 @@ class SingleAgent(WorldObject):
 
 	#using dynaQ
 	def LearnDynaQ(self, env, episodes, maxSteps):
-
 		for i in range(episodes):
 			step = 0
 			done = False
-			env.Reset()
+			env.RandomReset()
 
 			while step < maxSteps and not done:
 				step += 1
@@ -152,12 +151,6 @@ class SingleAgent(WorldObject):
 				reward, done = env.StepSingleAgent(self.Name, action)
 				nextState = env.GetStatePartialObservability(self)
 				self.Learn(prevState, action, nextState, reward)
-		
-				#for j in range(self.PlanningStep):
-				#	randomState = choice(list(self.Model.keys()))
-				#	randomAction = choice(list(self.Model[randomState].keys()))
-				#	predictedState, predictedReward = self.Model[randomState][randomAction]
-				#	self.UpdateQTable(randomState, randomAction, predictedState, predictedReward)
 			print("Episode: " + str(i) + " Steps: " + str(step) + " Epsilon: " + str(self.Epsilon))
 
 

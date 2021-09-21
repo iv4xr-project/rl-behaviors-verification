@@ -1,6 +1,7 @@
 from WorldObjects import *
 from Agents import *
 import os
+from random import randint, random 
 
 
 class GridWorld:
@@ -43,6 +44,32 @@ class GridWorld:
 			doorButton.Reset()
 		for goalButton in self.GoalButtons.values():
 			goalButton.Reset()
+
+	def RandomReset(self):
+		if random() < 0.3:
+			for agent in self.Agents.values():
+				x = randint(0, len(self.Grid) - 1)
+				y = randint(0, len(self.Grid[0]) - 1)
+				while self.Grid[x][y] == "w" or self.IsLockedDoor(x, y):
+					x = randint(0, len(self.Grid) - 1)
+					y = randint(0, len(self.Grid[0]) - 1)
+				agent.PosX = x
+				agent.PosY = y
+		else:
+			for agent in self.Agents.values():
+				agent.Reset()
+
+		
+		for door in self.Doors.values():
+			door.Reset()
+		for doorButton in self.DoorButtons.values():
+			doorButton.Reset()
+		for goalButton in self.GoalButtons.values():
+			goalButton.Reset()
+
+		for doorButton in self.DoorButtons.values():
+			if random() < 0.1:
+				doorButton.Press()
 
 
 	def CheckGoal(self):
