@@ -1,22 +1,37 @@
 from CreateWorldFromFile import *
 from Agents import *
+from CompareBehaviors import *
 import sys
+
+LEARN = "-learn"
+RUN = "-run"
+COMPARE = "-compare"
+CENTRALIZED = "centralized"
+CENTRALIZED_F = "-" + CENTRALIZED
+DECENTRALIZED = "decentralized"
+DECENTRALIZED_F = "-" + DECENTRALIZED
+SINGLE = "singleagents"
+SINGLE_F = "-" + SINGLE
+S1 = "-s1"
+S2 = "-s2"
+S3 = "-s3"
 
 
 if __name__ == "__main__":
-	if len(sys.argv) == 4 and sys.argv[1] == "-learn" and (sys.argv[2] == "-centralized" or sys.argv[2] == "-decentralized" or sys.argv[2] == "-singleagents") and (sys.argv[3] == "-s1" or sys.argv[3] == "-s2" or sys.argv[3] == "-s3"):
+	if len(sys.argv) == 4 and sys.argv[1] == LEARN and (sys.argv[2] == CENTRALIZED_F or sys.argv[2] == DECENTRALIZED_F or sys.argv[2] == SINGLE_F) and (sys.argv[3] == S1 or sys.argv[3] == S2 or sys.argv[3] == S3):
 		mode = sys.argv[2][1:]
 		scenario = sys.argv[3][-1]
+		scenarioPath = "scenarios/scenario" + scenario + ".txt"
 		
 		singleActions = ["UP", "DOWN", "LEFT", "RIGHT", "PRESS", "NOTHING"]
 
-		if mode == "centralized":
+		if mode == CENTRALIZED:
 			doubleActions = []
 			for a0 in singleActions:
 				for a1 in singleActions.copy():
 					doubleActions.append(a0 + "-" + a1)
 			agents = DoubleAgent("agent0", "agent1", doubleActions, 0.1, 0.999, 1.0, 0.05, 10)
-			env = CreateGridWorld("scenarios/scenario" + scenario + ".txt", agents, None)
+			env = CreateGridWorld(scenarioPath, agents, None)
 
 			if scenario == "1":
 				env.LearnCentralized(500, 500)
@@ -26,11 +41,12 @@ if __name__ == "__main__":
 				env.LearnCentralized(2000, 1500)
 			else:
 				print("Unknown scenario.")
-			env.EvalAgentsCentralized()
-		elif mode == "singleagents":
+			env.EvalAgents(True)
+
+		elif mode == SINGLE:
 			agent0 = SingleAgent("agent0", singleActions, 0.1, 0.999, 1.0, 0.05, 10)
 			agent1 = SingleAgent("agent1", singleActions, 0.1, 0.999, 1.0, 0.05, 10)
-			env = CreateGridWorld("scenarios/scenario" + scenario + ".txt", agent0, agent1)
+			env = CreateGridWorld(scenarioPath, agent0, agent1)
 
 			if scenario == "1":
 				agent0.LearnDynaQ(env, 500, 500)
@@ -44,11 +60,11 @@ if __name__ == "__main__":
 			else:
 				print("Unknown scenario.")
 
-			env.EvalAgentsDecentralized()
+			env.EvalAgents(True)
 		else:
 			agent0 = SingleAgent("agent0", singleActions, 0.1, 0.999, 1.0, 0.05, 10)
 			agent1 = SingleAgent("agent1", singleActions, 0.1, 0.999, 1.0, 0.05, 10)
-			env = CreateGridWorld("scenarios/scenario" + scenario + ".txt", agent0, agent1)
+			env = CreateGridWorld(scenarioPath, agent0, agent1)
 
 			if scenario == "1":
 				env.LearnDecentralized(500, 500)
@@ -59,38 +75,80 @@ if __name__ == "__main__":
 			else:
 				print("Unknown scenario.")
 
-			env.EvalAgentsDecentralized()
+			env.EvalAgents(True)
 		env.WriteAgentsQtableToFile(mode, scenario)
 
-	elif len(sys.argv) == 4 and sys.argv[1] == "-run" and (sys.argv[2] == "-centralized" or sys.argv[2] == "-decentralized" or sys.argv[2] == "-singleagents") and (sys.argv[3] == "-s1" or sys.argv[3] == "-s2" or sys.argv[3] == "-s3"):
+	elif len(sys.argv) == 4 and sys.argv[1] == RUN and (sys.argv[2] == CENTRALIZED_F or sys.argv[2] == DECENTRALIZED_F or sys.argv[2] == SINGLE_F) and (sys.argv[3] == S1 or sys.argv[3] == S2 or sys.argv[3] == S3):
 		mode = sys.argv[2][1:]
 		scenario = sys.argv[3][-1]
+		scenarioPath = "scenarios/scenario" + scenario + ".txt"
 
 		singleActions = ["UP", "DOWN", "LEFT", "RIGHT", "PRESS", "NOTHING"]
 
-		if mode == "centralized":
+		if mode == CENTRALIZED:
 			doubleActions = []
 			for a0 in singleActions:
 				for a1 in singleActions.copy():
 					doubleActions.append(a0 + "-" + a1)
 			agents = DoubleAgent("agent0", "agent1", doubleActions, 0.1, 0.999, 1.0, 0.05, 10)
-			env = CreateGridWorld("scenarios/scenario" + scenario + ".txt", agents, None)
+			env = CreateGridWorld(scenarioPath, agents, None)
 
 			env.LoadAgentsQtableFromFile(mode, scenario)
-			env.EvalAgentsCentralized()
-		#elif mode == "singleagents":
-		#	print("NOT IMPLEMENTED!")
+			env.EvalAgents(True)
 		else:
-			agent0 = SingleAgent("agent0", ["UP", "DOWN", "LEFT", "RIGHT", "PRESS", "NOTHING"], 0.1, 0.999, 0.0, 0.0, 10)
-			agent1 = SingleAgent("agent1", ["UP", "DOWN", "LEFT", "RIGHT", "PRESS", "NOTHING"], 0.1, 0.999, 0.0, 0.0, 10)
-			env = CreateGridWorld("scenarios/scenario" + scenario + ".txt", agent0, agent1)
+			agent0 = SingleAgent("agent0", singleActions, 0.1, 0.999, 0.0, 0.0, 10)
+			agent1 = SingleAgent("agent1", singleActions, 0.1, 0.999, 0.0, 0.0, 10)
+			env = CreateGridWorld(scenarioPath, agent0, agent1)
 
 			env.LoadAgentsQtableFromFile(mode, scenario)
-			env.EvalAgentsDecentralized()
+			env.EvalAgents(True)
+
+	elif len(sys.argv) == 5 and sys.argv[1] == COMPARE and (sys.argv[2] == CENTRALIZED_F or sys.argv[2] == DECENTRALIZED_F or sys.argv[2] == SINGLE_F) and (sys.argv[3] == CENTRALIZED_F or sys.argv[3] == DECENTRALIZED_F or sys.argv[3] == SINGLE_F) and (sys.argv[4] == S1 or sys.argv[4] == S2 or sys.argv[4] == S3):
+		behavior1 = sys.argv[2][1:]
+		behavior2 = sys.argv[3][1:]
+		scenario = sys.argv[4][-1]
+		scenarioPath = "scenarios/scenario" + scenario + ".txt"
+
+		singleActions = ["UP", "DOWN", "LEFT", "RIGHT", "PRESS", "NOTHING"]
+		doubleActions = []
+		if behavior1 == CENTRALIZED or behavior2 == CENTRALIZED:
+			for a0 in singleActions:
+				for a1 in singleActions.copy():
+					doubleActions.append(a0 + "-" + a1)
+
+		env1 = None
+		env2 = None
+		if behavior1 == CENTRALIZED:
+			agents = DoubleAgent("agent0", "agent1", doubleActions, 0.1, 0.999, 1.0, 0.05, 10)
+			env1 = CreateGridWorld(scenarioPath, agents, None)
+			env1.LoadAgentsQtableFromFile(behavior1, scenario)
+		else:
+			agent0 = SingleAgent("agent0", singleActions, 0.1, 0.999, 0.0, 0.0, 10)
+			agent1 = SingleAgent("agent1", singleActions, 0.1, 0.999, 0.0, 0.0, 10)
+			env1 = CreateGridWorld(scenarioPath, agent0, agent1)
+			env1.LoadAgentsQtableFromFile(behavior1, scenario)
+		if behavior2 == CENTRALIZED:
+			agents = DoubleAgent("agent0", "agent1", doubleActions, 0.1, 0.999, 1.0, 0.05, 10)
+			env2 = CreateGridWorld(scenarioPath, agents, None)
+			env2.LoadAgentsQtableFromFile(behavior2, scenario)
+		else:
+			agent0 = SingleAgent("agent0", singleActions, 0.1, 0.999, 0.0, 0.0, 10)
+			agent1 = SingleAgent("agent1", singleActions, 0.1, 0.999, 0.0, 0.0, 10)
+			env2 = CreateGridWorld(scenarioPath, agent0, agent1)
+			env2.LoadAgentsQtableFromFile(behavior2, scenario)
+
+		gridSize = env1.GetGridSize()
+		trace1 = env1.EvalAgents(False)
+		trace2 = env2.EvalAgents(False)
+		hitmapsPerAgentDiff = CompareHitmapsPerAgent(gridSize, trace1.copy(), trace2.copy())
+		print("HITMAP PER AGENT DIFF: " + str(hitmapsPerAgentDiff))
+		hitmapsDiff = CompareHitmaps(gridSize, trace1.copy(), trace2.copy())
+		print("HITMAP DIFF: " + str(hitmapsDiff))
 
 	else:
 		print("Unknown command. Possible commands are:")
-		print("> main.py -learn [-centralized|-decentralized] [-s1|-s2|-s3]")
-		print("> main.py -run [-centralized|-decentralized] [-s1|-s2|-s3]")
+		print("> main.py -learn [-centralized|-decentralized|-singleagents] [-s1|-s2|-s3]")
+		print("> main.py -run [-centralized|-decentralized|-singleagents] [-s1|-s2|-s3]")
+		print("> main.py -compare [-centralized|-decentralized|-singleagents] [-centralized|-decentralized|-singleagents] [-s1|-s2|-s3]")
 	
 

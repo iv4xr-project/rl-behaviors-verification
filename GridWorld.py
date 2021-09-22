@@ -35,6 +35,10 @@ class GridWorld:
 		return None
 
 
+	def GetGridSize(self):
+		return (len(self.Grid), len(self.Grid[0]))
+
+
 	def Reset(self):
 		for agent in self.Agents.values():
 			agent.Reset()
@@ -314,11 +318,22 @@ class GridWorld:
 		return state
 
 
-	def EvalAgentsDecentralized(self):
+	def EvalAgents(self, shouldRender):
+		if "centralized" in self.Agents:
+			return self.EvalAgentsCentralized(shouldRender)
+		else:
+			return self.EvalAgentsDecentralized(shouldRender)
+
+
+	def EvalAgentsDecentralized(self, shouldRender):
+		trace = []
 		agent0 = self.Agents["agent0"]
 		agent1 = self.Agents["agent1"]
 
 		self.Reset()
+		trace.append((agent0.PosX, agent0.PosY))
+		trace.append((agent1.PosX, agent1.PosY))
+
 		step = 0
 		done = False
 		while step < 60 and not done:
@@ -328,15 +343,24 @@ class GridWorld:
 			action0 = agent0.Act(state0)
 			action1 = agent1.Act(state1)
 			_, _,done = self.StepDecentralized(action0, action1)
-			self.Render()
-			input("This was the " + str(step) + " th step: (a0," + agent0.Actions[action0] + ") (a1," + agent1.Actions[action1] + "). Press any key to continue.")
-		print("Total Steps: " + str(step))
+			trace.append((agent0.PosX, agent0.PosY))
+			trace.append((agent1.PosX, agent1.PosY))
+			if shouldRender:
+				self.Render()
+				input("This was the " + str(step) + " th step: (a0," + agent0.Actions[action0] + ") (a1," + agent1.Actions[action1] + "). Press any key to continue.")
+		if shouldRender:
+			print("Total Steps: " + str(step))
+		return trace
 
 
-	def EvalAgentsCentralized(self):
+	def EvalAgentsCentralized(self, shouldRender):
+		trace = []
 		agents = self.Agents["centralized"]
 
 		self.Reset()
+		trace.append((agents.PosX0, agents.PosY0))
+		trace.append((agents.PosX1, agents.PosY1))
+
 		step = 0
 		done = False
 		while step < 60 and not done:
@@ -344,9 +368,14 @@ class GridWorld:
 			state = self.GetStateFullObservability()
 			actions = agents.Act(state)
 			_, done = self.StepCentralized(actions)
-			self.Render()
-			input("This was the " + str(step) + " th step: action0-action1 were " + agents.Actions[actions] + ". Press any key to continue.")
-		print("Total Steps: " + str(step))
+			trace.append((agents.PosX0, agents.PosY0))
+			trace.append((agents.PosX1, agents.PosY1))
+			if shouldRender:
+				self.Render()
+				input("This was the " + str(step) + " th step: action0-action1 were " + agents.Actions[actions] + ". Press any key to continue.")
+		if shouldRender:
+			print("Total Steps: " + str(step))
+		return trace
 
 
 

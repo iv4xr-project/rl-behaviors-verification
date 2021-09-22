@@ -44,7 +44,7 @@ def CreateGridWorld(filename, a0, a1):
 					doors[doorName].SetPos(rowNum, colNum)
 				elif "a" in cell:
 					agentName = cell[cell.index("agent"):]
-					if isinstance(a0, DoubleAgent):
+					if a1 is None:
 						if agentName == a0.Name0:
 							agents["centralized"] = a0
 							a0.SetInitialPosition0(rowNum, colNum)
