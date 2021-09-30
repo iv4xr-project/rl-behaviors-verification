@@ -118,24 +118,30 @@ if __name__ == "__main__":
 
 		env1 = None
 		env2 = None
+		policy1 = None
+		policy2 = None
 		if behavior1 == CENTRALIZED:
 			agents = DoubleAgent("agent0", "agent1", doubleActions, 0.1, 0.999, 1.0, 0.05, 10)
 			env1 = CreateGridWorld(scenarioPath, agents, None)
 			env1.LoadAgentsQtableFromFile(behavior1, scenario)
+			policy1 = GetPolicy(agents)
 		else:
 			agent0 = SingleAgent("agent0", singleActions, 0.1, 0.999, 0.0, 0.0, 10)
 			agent1 = SingleAgent("agent1", singleActions, 0.1, 0.999, 0.0, 0.0, 10)
 			env1 = CreateGridWorld(scenarioPath, agent0, agent1)
 			env1.LoadAgentsQtableFromFile(behavior1, scenario)
+			policy1 = CreateJointPolicy(agent0, agent1)
 		if behavior2 == CENTRALIZED:
 			agents = DoubleAgent("agent0", "agent1", doubleActions, 0.1, 0.999, 1.0, 0.05, 10)
 			env2 = CreateGridWorld(scenarioPath, agents, None)
 			env2.LoadAgentsQtableFromFile(behavior2, scenario)
+			policy2 = GetPolicy(agents)
 		else:
 			agent0 = SingleAgent("agent0", singleActions, 0.1, 0.999, 0.0, 0.0, 10)
 			agent1 = SingleAgent("agent1", singleActions, 0.1, 0.999, 0.0, 0.0, 10)
 			env2 = CreateGridWorld(scenarioPath, agent0, agent1)
 			env2.LoadAgentsQtableFromFile(behavior2, scenario)
+			policy2 = CreateJointPolicy(agent0, agent1)
 
 		gridSize = env1.GetGridSize()
 		trace1 = env1.EvalAgents(False)
@@ -144,6 +150,8 @@ if __name__ == "__main__":
 		print("HITMAP PER AGENT DIFF: " + str(hitmapsPerAgentDiff))
 		hitmapsDiff = CompareHitmaps(gridSize, trace1.copy(), trace2.copy())
 		print("HITMAP DIFF: " + str(hitmapsDiff))
+		policiesDiff = CompareAgentsPolicies(policy1, policy2)
+		print("POLICIES DIFF: " + str(policiesDiff))
 
 	else:
 		print("Unknown command. Possible commands are:")
