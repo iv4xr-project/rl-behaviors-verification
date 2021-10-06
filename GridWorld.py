@@ -169,7 +169,7 @@ class GridWorld:
 
 
 	def StepCentralized(self, actions):
-		reward = -1
+		reward = -2
 		done = self.CheckGoal()
 
 		agents = self.Agents["centralized"]
@@ -185,7 +185,7 @@ class GridWorld:
 				newY = agents.PosY1
 
 			if action == "NOTHING":
-				reward = 0
+				reward += 1
 			if action == "PRESS":
 				b = self.GetUnpressedDoorButton(newX, newY)
 				if b != None:
@@ -213,7 +213,7 @@ class GridWorld:
 						agents.PosY1 = newY
 		
 		if done:
-			reward = 100
+			reward = 200
 		return reward, done
 
 
@@ -336,13 +336,15 @@ class GridWorld:
 
 		step = 0
 		done = False
+		reward = 0
 		while step < 60 and not done:
 			step += 1
 			state0 = self.GetStatePartialObservability(agent0)
 			state1 = self.GetStatePartialObservability(agent1)
 			action0 = agent0.Act(state0)
 			action1 = agent1.Act(state1)
-			_, _,done = self.StepDecentralized(action0, action1)
+			r1, r2,done = self.StepDecentralized(action0, action1)
+			reward += (r1 + r2)
 			trace.append((agent0.PosX, agent0.PosY))
 			trace.append((agent1.PosX, agent1.PosY))
 			if shouldRender:
@@ -350,7 +352,7 @@ class GridWorld:
 				input("This was the " + str(step) + " th step: (a0," + agent0.Actions[action0] + ") (a1," + agent1.Actions[action1] + "). Press any key to continue.")
 		if shouldRender:
 			print("Total Steps: " + str(step))
-		return trace
+		return trace, reward
 
 
 	def EvalAgentsCentralized(self, shouldRender):
@@ -363,11 +365,13 @@ class GridWorld:
 
 		step = 0
 		done = False
+		reward = 0
 		while step < 60 and not done:
 			step += 1
 			state = self.GetStateFullObservability()
 			actions = agents.Act(state)
-			_, done = self.StepCentralized(actions)
+			r, done = self.StepCentralized(actions)
+			reward += r
 			trace.append((agents.PosX0, agents.PosY0))
 			trace.append((agents.PosX1, agents.PosY1))
 			if shouldRender:
@@ -375,7 +379,7 @@ class GridWorld:
 				input("This was the " + str(step) + " th step: action0-action1 were " + agents.Actions[actions] + ". Press any key to continue.")
 		if shouldRender:
 			print("Total Steps: " + str(step))
-		return trace
+		return trace, reward
 
 
 

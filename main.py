@@ -144,8 +144,10 @@ if __name__ == "__main__":
 			policy2 = CreateJointPolicy(agent0, agent1)
 
 		gridSize = env1.GetGridSize()
-		trace1 = env1.EvalAgents(False)
-		trace2 = env2.EvalAgents(False)
+		trace1, reward1 = env1.EvalAgents(False)
+		trace2, reward2 = env2.EvalAgents(False)
+		rewardDiff = abs(reward1 - reward2)
+		print("REWARD DIFF: " + str(rewardDiff))
 		hitmapsPerAgentDiff = CompareHitmapsPerAgent(gridSize, trace1.copy(), trace2.copy())
 		print("HITMAP PER AGENT DIFF: " + str(hitmapsPerAgentDiff))
 		hitmapsDiff = CompareHitmaps(gridSize, trace1.copy(), trace2.copy())
