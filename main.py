@@ -34,48 +34,45 @@ if __name__ == "__main__":
 			env = CreateGridWorld(scenarioPath, agents, None)
 
 			if scenario == "1":
-				env.LearnCentralized(500, 500)
+				env.LearnCentralized(1000, 500)
 			elif scenario == "2":
-				env.LearnCentralized(500, 800)
+				env.LearnCentralized(1000, 800)
 			elif scenario == "3":
 				env.LearnCentralized(2000, 1500)
 			else:
 				print("Unknown scenario.")
-			env.EvalAgents(True)
-
 		elif mode == SINGLE:
 			agent0 = SingleAgent("agent0", singleActions, 0.1, 0.999, 1.0, 0.05, 10)
 			agent1 = SingleAgent("agent1", singleActions, 0.1, 0.999, 1.0, 0.05, 10)
 			env = CreateGridWorld(scenarioPath, agent0, agent1)
 
 			if scenario == "1":
-				agent0.LearnDynaQ(env, 500, 500)
-				agent1.LearnDynaQ(env, 500, 500)
+				agent0.LearnDynaQ(env, 1000, 500)
+				agent1.LearnDynaQ(env, 1000, 500)
 			elif scenario == "2":
-				agent0.LearnDynaQ(env, 500, 800)
-				agent1.LearnDynaQ(env, 500, 800)
+				agent0.LearnDynaQ(env, 1000, 800)
+				agent1.LearnDynaQ(env, 1000, 800)
 			elif scenario == "3":
 				agent0.LearnDynaQ(env, 2000, 1500)
 				agent1.LearnDynaQ(env, 2000, 1500)
 			else:
 				print("Unknown scenario.")
 
-			env.EvalAgents(True)
 		else:
 			agent0 = SingleAgent("agent0", singleActions, 0.1, 0.999, 1.0, 0.05, 10)
 			agent1 = SingleAgent("agent1", singleActions, 0.1, 0.999, 1.0, 0.05, 10)
 			env = CreateGridWorld(scenarioPath, agent0, agent1)
 
 			if scenario == "1":
-				env.LearnDecentralized(500, 500)
+				env.LearnDecentralized(1000, 500)
 			elif scenario == "2":
-				env.LearnDecentralized(500, 800)
+				env.LearnDecentralized(1000, 800)
 			elif scenario == "3":
 				env.LearnDecentralized(2000, 1500)
 			else:
 				print("Unknown scenario.")
 
-			env.EvalAgents(True)
+		#env.EvalAgents(True)
 		env.WriteAgentsQtableToFile(mode, scenario)
 
 	elif len(sys.argv) == 4 and sys.argv[1] == RUN and (sys.argv[2] == CENTRALIZED_F or sys.argv[2] == DECENTRALIZED_F or sys.argv[2] == SINGLE_F) and (sys.argv[3] == S1 or sys.argv[3] == S2 or sys.argv[3] == S3):

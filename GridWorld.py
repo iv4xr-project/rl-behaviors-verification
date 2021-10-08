@@ -3,6 +3,9 @@ from Agents import *
 import os
 from random import randint, random 
 
+REWARD_GOAL = 100
+REWARD_NOTHING = -0.4
+REWARD_OTHER_ACTIONS = -1
 
 class GridWorld:
 	def __init__(self, grid, agents, doors, doorButtons, goalButtons):
@@ -87,11 +90,11 @@ class GridWorld:
 		a = self.Agents[agentName]
 		newX = a.PosX
 		newY = a.PosY
-		reward = -1
+		reward = REWARD_OTHER_ACTIONS
 		done = self.CheckGoal()
 
 		if action == 5: #NOTHING
-			reward = -0.5
+			reward = REWARD_NOTHING
 		if action == 4: #PRESS
 			b = self.GetUnpressedDoorButton(newX, newY)
 			if b != None:
@@ -115,13 +118,13 @@ class GridWorld:
 				a.PosY = newY
 		
 		if done:
-			reward = 100
+			reward = REWARD_GOAL
 		return reward, done
 
 
 	def StepDecentralized(self, action0, action1):
-		reward0 = -1
-		reward1 = -1
+		reward0 = REWARD_OTHER_ACTIONS
+		reward1 = REWARD_OTHER_ACTIONS
 		done = self.CheckGoal()
 
 		for i in range(2):
@@ -135,18 +138,16 @@ class GridWorld:
 
 			if action == 5: #NOTHING
 				if i == 0:
-					reward0 = 0
+					reward0 = REWARD_NOTHING
 				elif i == 1:
-					reward1 = 0
+					reward1 = REWARD_NOTHING
 			if action == 4: #PRESS
 				b = self.GetUnpressedDoorButton(newX, newY)
 				if b != None:
 					b.Press()
-					#reward = 100
 				else:
 					b = self.GetUnpressedGoalButton(newX, newY)
 					if b != None:
-						#reward = 100
 						b.Press()
 			else: #moving actions
 				if action == 0: #UP
@@ -163,13 +164,13 @@ class GridWorld:
 					a.PosY = newY
 		
 		if done:
-			reward0 = 100
-			reward1 = 100
+			reward0 = REWARD_GOAL
+			reward1 = REWARD_GOAL
 		return reward0, reward1, done
 
 
 	def StepCentralized(self, actions):
-		reward = -2
+		reward = 2 * REWARD_OTHER_ACTIONS
 		done = self.CheckGoal()
 
 		agents = self.Agents["centralized"]
@@ -185,7 +186,7 @@ class GridWorld:
 				newY = agents.PosY1
 
 			if action == "NOTHING":
-				reward += 1
+				reward += (REWARD_NOTHING - REWARD_OTHER_ACTIONS)
 			if action == "PRESS":
 				b = self.GetUnpressedDoorButton(newX, newY)
 				if b != None:
@@ -213,7 +214,7 @@ class GridWorld:
 						agents.PosY1 = newY
 		
 		if done:
-			reward = 200
+			reward = 2 * REWARD_GOAL
 		return reward, done
 
 

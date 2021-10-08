@@ -39,7 +39,7 @@ class SingleAgent(WorldObject):
 
 
 	def UpdateEpsilon(self, currentEpisode, maxEpisodes):
-		self.Epsilon = max(self.EpsilonMax - ((self.EpsilonMax - self.EpsilonMin) * currentEpisode / (0.4 * maxEpisodes)), self.EpsilonMin)
+		self.Epsilon = max(self.EpsilonMax - ((self.EpsilonMax - self.EpsilonMin) * currentEpisode / (0.7 * maxEpisodes)), self.EpsilonMin)
 
 
 	#it assumes each coordinate of the position is below 99
